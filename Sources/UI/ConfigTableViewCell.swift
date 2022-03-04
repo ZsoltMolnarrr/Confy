@@ -9,10 +9,13 @@ import UIKit
 
 class ConfigTableViewCell: UITableViewCell {
     @IBOutlet weak var title: UILabel!
+    @IBOutlet weak var source: UILabel!
     @IBOutlet weak var detail: UITextView!
 
     func configure(viewModel: ConfigViewModel.Config) {
-        title.text = viewModel.name + " (\(viewModel.source.name))"
+        title.text = viewModel.name
+        source.text = viewModel.source.name
+        source.textColor = viewModel.source == .localOverride ? .red : .darkGray
         detail.text = viewModel.value
     }
 }

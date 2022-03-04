@@ -16,7 +16,6 @@ class ConfigViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        tableView.register(.configTableViewCell, forCellReuseIdentifier: "ConfigTableViewCell")
         tableView.rowHeight = UITableView.automaticDimension
         navigationController?.navigationBar.prefersLargeTitles = true
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)

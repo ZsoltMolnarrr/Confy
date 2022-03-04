@@ -11,13 +11,17 @@ import UIKit
 public class Confy {
     static let storyboard = UIStoryboard(name: "Config", bundle: .confy)
 
-    public static func addScreen(domains: [ConfigDomain], into navigationController: UINavigationController) {
+    public static func addScreen(domains: [ConfigDomain], title: String? = nil, into navigationController: UINavigationController) {
         let view = Confy.storyboard.instantiateViewController(withIdentifier: "list") as! ConfigViewController
         let interactor = ConfigInteractor(domains: domains)
         let presenter = ConfigPresenter()
         view.useCase = interactor
         interactor.delegate = presenter
         presenter.display = view
+
+        if title != nil {
+            view.title = title
+        }
         navigationController.pushViewController(view, animated: true)
     }
 }
