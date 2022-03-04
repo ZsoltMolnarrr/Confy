@@ -64,6 +64,7 @@ Expose your configuration properties to the UI. Primarily to be used for debug f
   #  the deployment target. You can optionally include the target after the platform.
   #
 
+  spec.swift_version = '5.3'
   # spec.platform     = :ios
   spec.platform     = :ios, "11.0"
 
