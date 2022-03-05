@@ -16,7 +16,7 @@ Pod::Spec.new do |spec|
   #
 
   spec.name         = "Confy"
-  spec.version      = "0.2.3"
+  spec.version      = "0.2.4"
   spec.summary      = "Swift properties easily exposed to UI. Powered by @propertyWrapper."
 
   # This description is used to generate tags and improve search results.
