@@ -1,2 +1,2 @@
-# Confy
-Swift properties easily exposed to UI. Powered by @propertyWrapper.
+# 🎉 Confy 🔧
+Swift properties easily exposed to debug UI. Powered by @propertyWrapper.
