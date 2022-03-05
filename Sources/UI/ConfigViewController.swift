@@ -7,13 +7,13 @@
 
 import UIKit
 
-class ConfigViewController: UIViewController {
+public class ConfigViewController: UIViewController {
     @IBOutlet private var tableView: UITableView!
     private var searchController: UISearchController?
     private weak var editor: ConfigTexEditorViewController?
     var useCase: ConfigUseCase!
 
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
 
         tableView.rowHeight = UITableView.automaticDimension
@@ -31,6 +31,16 @@ class ConfigViewController: UIViewController {
         searchController?.searchBar.placeholder = "Search config"
         navigationItem.searchController = searchController
         definesPresentationContext = true
+    }
+
+    func addCloseButton() {
+        navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .stop,
+                                                           target: self,
+                                                           action: #selector(close))
+    }
+
+    @objc func close() {
+        navigationController?.dismiss(animated: true)
     }
 
     private var sections: [ConfigViewModel.Section] = [] {
@@ -77,26 +87,26 @@ class ConfigViewController: UIViewController {
 }
 
 extension ConfigViewController: UITableViewDataSource {
-    func numberOfSections(in tableView: UITableView) -> Int {
+    public func numberOfSections(in tableView: UITableView) -> Int {
         return sections.count
     }
 
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return sections[section].configs.count
     }
 
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    public func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return sections[section].title
     }
 
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ConfigTableViewCell") as! ConfigTableViewCell
         let viewModel = config(for: indexPath)
         cell.configure(viewModel: viewModel)
         return cell
     }
 
-    func tableView(_ tableView: UITableView,
+    public func tableView(_ tableView: UITableView,
                    trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let config = self.config(for: indexPath)
         let copy = UIContextualAction(style: .normal, title: "Copy") { _, _, completionHandler in
@@ -122,25 +132,25 @@ extension ConfigViewController: UITableViewDataSource {
 }
 
 extension ConfigViewController: UISearchResultsUpdating {
-    func updateSearchResults(for searchController: UISearchController) {
+    public func updateSearchResults(for searchController: UISearchController) {
         useCase.search(for: searchController.searchBar.text ?? "")
     }
 }
 
 extension ConfigViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         edit(config: config(for: indexPath))
     }
 }
 
 extension ConfigViewController: ConfigDisplay {
-    func display(config: ConfigViewModel) {
+    public func display(config: ConfigViewModel) {
         sections = config.sections
         navigationItem.prompt = overrideCount > 0 ? "Currently \(overrideCount) values modified" : nil
     }
 
-    func errorAlert(title: String, message: String) {
+    public func errorAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
         present(alert, animated: true, completion: nil)

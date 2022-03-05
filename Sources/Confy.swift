@@ -15,47 +15,64 @@ public class Confy {
     /// 🔩 Settings of the package
     public static var perferences = Preferences()
 
-    /// 💾 Default store used by ConfigDomains
-    /// ConfigDomains not overriding the `configStore` property use this reference.
+    /// 💾 Default used by ConfigDomains, to store overridden values.
+    /// May be set to `nil` in order to disable persistent storage.
     /// If changing this value, make sure to perform it before initializing ConfigDomains.
-    public static var defaultPersistentStore = UserDefaultsConfigStore()
+    public static var defaultPersistentStore: PersistentConfigStore? = UserDefaultsConfigStore()
 
-    /// ➡️ Creates Config List screen, displaying configs of the given ConfigDomain, and pushes into the given navigation controller.
+    /// ➡️ Creates Config List screen, displaying configs of the given ConfigDomains, and pushes into the given navigation controller
     /// - Parameters:
-    ///   - domain: the config elements of which to display and edit
+    ///   - domains: the config elements of these to display and edit
     ///   - title: title of the config list screen
     ///   - navigationController: stack to push the screen into
-    public static func addScreen(domain: ConfigDomain, title: String? = nil, into navigationController: UINavigationController) {
-        addScreen(domains: [domain], title: title, into: navigationController)
+    public static func pushConfigList(showing domains: ConfigDomain...,
+                                      title: String? = nil,
+                                      navigationController: UINavigationController) {
+        let screen = makeConfigListScreen(domains: domains, title: title)
+        navigationController.pushViewController(screen, animated: true)
     }
 
-    /// ➡️ Creates Config List screen, displaying configs of the given ConfigDomains, and pushes into the given navigation controller.
+    /// ⬆️ Creates Config List screen, displaying configs of the given ConfigDomains, and modally presents on the topmost ViewController
     /// - Parameters:
-    ///   - domains: combined, the elemnts to display and edit
+    ///   - domains: the config elements of these to display and edit
     ///   - title: title of the config list screen
-    ///   - navigationController: stack to push the screen into
-    public static func addScreen(domains: [ConfigDomain], title: String? = nil, into navigationController: UINavigationController) {
+    public static func presentConfigList(showing domains: ConfigDomain..., title: String? = nil) {
+        let screen = makeConfigListScreen(domains: domains, title: title)
+        screen.addCloseButton()
+        let navigationController = UINavigationController(rootViewController: screen)
+        navigationController.navigationBar.prefersLargeTitles = true
+        if let rootViewController = UIApplication.shared.keyWindow?.rootViewController {
+            (rootViewController.presentedViewController ?? rootViewController)?.present(navigationController, animated: true)
+        }
+    }
+
+    /// 🏭 Creates Config List Screen
+    /// May be used with custom presentation method
+    /// - Parameters:
+    ///   - domains: combined, the elemnets to display and edit
+    ///   - title: title of the config list screen
+    /// - Returns: Config List Screen
+    public static func makeConfigListScreen(domains: [ConfigDomain], title: String?) -> ConfigViewController {
         let view = Confy.storyboard.instantiateViewController(withIdentifier: "list") as! ConfigViewController
         let interactor = ConfigInteractor(domains: domains)
         let presenter = ConfigPresenter()
         view.useCase = interactor
         interactor.delegate = presenter
         presenter.display = view
-
         if title != nil {
             view.title = title
         }
-        navigationController.pushViewController(view, animated: true)
+        return view
     }
-
-    // MARK: Internals
-    static let storyboard = UIStoryboard(name: "Config", bundle: .confy)
 }
 
 extension Confy {
     public struct Preferences {
         // var ... = ...
     }
+
+    // MARK: Internals
+    static let storyboard = UIStoryboard(name: "Config", bundle: .confy)
 }
 
 extension Bundle {
