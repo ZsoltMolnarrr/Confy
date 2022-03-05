@@ -14,4 +14,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build
-      run: fastlane build
+      run: swift build -v
+    - name: Run tests
+      run: swift test -v
