@@ -27,16 +27,19 @@ platform :ios do
 
     podspec_version = version_get_podspec(path: podspec_path)
     if podspec_version == version
-      UI.user_error!("Given version matches with an already existing one")
+      UI.user_error!("Given version matches with current one")
     end
 
+    if !ENV["CONFY_RELEASE_TOKEN"]
+      UI.user_error!("Missing CONFY_RELEASE_TOKEN from shell environment")
+    end
+
+    pod_lib_lint
     version_bump_podspec(path: podspec_path, version_number: version)
     git_commit(path: podspec_path, message: "Version Bump")
     push_to_git_remote
     git_tag tag:version
-
     pod_push(path: podspec_path)
-
     github_release = set_github_release(
       repository_name: "ZsoltMolnarrr/Confy",
       api_token: ENV["CONFY_RELEASE_TOKEN"],
