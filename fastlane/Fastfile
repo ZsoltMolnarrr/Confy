@@ -34,6 +34,12 @@ platform :ios do
       UI.user_error!("Missing CONFY_RELEASE_TOKEN from shell environment")
     end
 
+    # Checking package health
+
+    pod_lib_lint
+
+    # Making changelog
+
     last_version_tag = last_git_tag
     changelog = changelog_from_git_commits(
       between: [last_version_tag, "HEAD"],
@@ -41,11 +47,16 @@ platform :ios do
       date_format: "short",# Optional, lets you provide an additional date format to dates within the pretty-formatted string
       match_lightweight_tag: false,  # Optional, lets you ignore lightweight (non-annotated) tags when searching for the last tag
     )
-    pod_lib_lint
+
+    # Bumping version
+
     version_bump_podspec(path: podspec_path, version_number: version)
     git_commit(path: podspec_path, message: "Version Bump")
     push_to_git_remote
     git_tag tag:version
+
+    # Releasing
+
     pod_push(path: podspec_path)
     github_release = set_github_release(
       repository_name: "ZsoltMolnarrr/Confy",
