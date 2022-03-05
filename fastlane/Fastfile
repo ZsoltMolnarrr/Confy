@@ -37,11 +37,10 @@ platform :ios do
     last_version_tag = last_git_tag
     changelog = changelog_from_git_commits(
       between: [last_version_tag, "HEAD"],
-      pretty: "- (%ae) %s",
+      pretty: "- %s",
       date_format: "short",# Optional, lets you provide an additional date format to dates within the pretty-formatted string
       match_lightweight_tag: false,  # Optional, lets you ignore lightweight (non-annotated) tags when searching for the last tag
     )
-
     pod_lib_lint
     version_bump_podspec(path: podspec_path, version_number: version)
     git_commit(path: podspec_path, message: "Version Bump")

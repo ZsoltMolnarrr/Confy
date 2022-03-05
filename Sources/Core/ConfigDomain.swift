@@ -7,26 +7,42 @@
 
 import Foundation
 
-public struct ConfigSnapshot {
-    public let name: String
-    public let value: String
-    public let source: SourceKind
+public protocol ConfigDomain: AnyObject {
+    var configDomainName: String { get }
+    var configStore: PersistentConfigStore? { get }
+    func overridesChanged()
 }
 
-public protocol ConfigDomain {
-    var domainName: String { get }
-    var configStore: ConfigStore { get }
-    func overridesChanged()
+public extension ConfigDomain {
+    var configStore: PersistentConfigStore? {
+        Confy.defaultPersistentStore
+    }
+
+    var configDomainName: String {
+        String(describing: self)
+    }
+
+    func overridesChanged() {
+        // To be overridden
+    }
+
+    func restoreOverrides() {
+        guard let configStore = configStore else { return }
+        let restoredValues = configStore.load(domain: configDomainName)
+        for (key, value) in restoredValues {
+            if let config = propertyValue(named: key) as? OverridableProperty,
+                let data = value as? Data {
+                try? config.override(with: data)
+            }
+        }
+    }
 }
 
 extension ConfigDomain {
     var snapshots: [ConfigSnapshot] {
         return properties.compactMap { (name: String, value: Any) in
             if let overrideable = value as? OverridableProperty {
-                let (value, source) = overrideable.valueWithSource
-                return ConfigSnapshot(name: name,
-                                      value: value,
-                                      source: source)
+                return overrideable.makeSnapshot(for: name)
             } else {
                 return nil
             }
@@ -37,19 +53,9 @@ extension ConfigDomain {
         let data = jsonString?.data(using: .utf8)
         if let config = propertyValue(named: propertyName) as? OverridableProperty {
             try config.override(with: data)
-            if let data = data {
-                configStore.save(domain: domainName, key: propertyName, value: data)
+            if let configStore = configStore, let data = data {
+                configStore.save(domain: configDomainName, key: propertyName, value: data)
                 overridesChanged()
-            }
-        }
-    }
-
-    func restoreOverrides() {
-        let restoredValues = configStore.load(domain: domainName)
-        for (key, value) in restoredValues {
-            if let config = propertyValue(named: key) as? OverridableProperty,
-                let data = value as? Data {
-                try? config.override(with: data)
             }
         }
     }
@@ -69,7 +75,9 @@ extension ConfigDomain {
         names.forEach { propertyName in
             if let config = propertyValue(named: propertyName) as? OverridableProperty {
                 try? config.override(with: nil)
-                configStore.removeValue(domain: domainName, key: propertyName)
+                if let configStore = configStore {
+                    configStore.removeValue(domain: configDomainName, key: propertyName)
+                }
             }
         }
         overridesChanged()
@@ -91,10 +99,13 @@ extension ConfigDomain {
         }
         return pair?.value
     }
+}
 
-    func overridesChanged() {
-        // To be overridden
-    }
+struct ConfigSnapshot {
+    let name: String
+    let source: SourceKind
+    let encodedValue: String
+    let value: Any
 }
 
 extension Config: OverridableProperty where Value: Codable {
@@ -107,6 +118,23 @@ extension Config: OverridableProperty where Value: Codable {
         overrideValue = value
     }
 
+    func makeSnapshot(for name: String) -> ConfigSnapshot {
+        let (value, source) = valueWithSourceName
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        let encodedValue: String
+        if let data = try? encoder.encode(value),
+           let valueString = String(data: data, encoding: .utf8) {
+              encodedValue = valueString
+        } else {
+            encodedValue = ""
+        }
+        return .init(name: name,
+                     source: source,
+                     encodedValue: encodedValue,
+                     value: value)
+    }
+
     var valueWithSource: (String, SourceKind) {
         let (value, source) = valueWithSourceName
         let encoder = JSONEncoder()
@@ -117,9 +145,13 @@ extension Config: OverridableProperty where Value: Codable {
         }
         return (valueString, source)
     }
+
+    var storedType: Any {
+        return Value.self
+    }
 }
 
 private protocol OverridableProperty {
-    var valueWithSource: (String, SourceKind) { get }
     func override(with data: Data?) throws
+    func makeSnapshot(for name: String) -> ConfigSnapshot
 }

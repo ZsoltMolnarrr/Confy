@@ -18,7 +18,7 @@ class ConfigInteractor: ConfigUseCase {
     }
 
     private func domain(named: String) -> ConfigDomain? {
-        return domains.first { $0.domainName == named }
+        return domains.first { $0.configDomainName == named }
     }
 
     func load() {

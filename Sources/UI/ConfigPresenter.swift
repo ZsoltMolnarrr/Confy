@@ -23,11 +23,11 @@ class ConfigPresenter: ConfigUseCaseDelegate {
 
     private func makeViewModel(domains: [ConfigDomain]) -> ConfigViewModel {
         let sections: [ConfigViewModel.Section] = domains.map { domain -> ConfigViewModel.Section in
-            let title = domain.domainName
+            let title = domain.configDomainName
             let configs: [ConfigViewModel.Config] = domain.snapshots.map { snapshot -> ConfigViewModel.Config in
-                return ConfigViewModel.Config(domain: domain.domainName,
+                return ConfigViewModel.Config(domain: domain.configDomainName,
                                               name: snapshot.name,
-                                              value: snapshot.value,
+                                              value: snapshot.encodedValue,
                                               source: snapshot.source)
             }
             .filter({ config -> Bool in

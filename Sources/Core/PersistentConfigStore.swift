@@ -7,17 +7,19 @@
 
 import Foundation
 
-public protocol ConfigStore {
+/// Stores Config overrides at a persistent location.
+public protocol PersistentConfigStore {
     func save(domain: String, key: String, value: Data)
     func load(domain: String) -> [String: Any]
     func removeValue(domain: String, key: String)
 }
 
+/// Stores Config overrides in UserDefaults
 public class UserDefaultsConfigStore {
     private let key: String
     private let userDefaults: UserDefaults
 
-    public init(key: String = "config.store", userDefaults: UserDefaults = .standard) {
+    public init(key: String = "confy.overrides", userDefaults: UserDefaults = .standard) {
         self.key = key
         self.userDefaults = userDefaults
     }
@@ -35,7 +37,7 @@ public class UserDefaultsConfigStore {
     }
 }
 
-extension UserDefaultsConfigStore: ConfigStore {
+extension UserDefaultsConfigStore: PersistentConfigStore {
     public func save(domain: String, key: String, value: Data) {
         var dict = dictionary(of: domain)
         dict[key] = value
