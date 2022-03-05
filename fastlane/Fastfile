@@ -33,11 +33,12 @@ platform :ios do
     version_bump_podspec(path: podspec_path, version_number: version)
     git_commit(path: podspec_path, message: "Version Bump")
     push_to_git_remote
+    git_tag tag:version
 
-    pod_push(path: "Confy.podspec")
+    pod_push(path: podspec_path)
 
     github_release = set_github_release(
-      repository_name: "fastlane/fastlane",
+      repository_name: "ZsoltMolnarrr/Confy",
       api_token: ENV["CONFY_RELEASE_TOKEN"],
       name: "New release",
       tag_name: version,
@@ -45,5 +46,22 @@ platform :ios do
       commitish: "main",
       upload_assets: []
     )
+  end
+
+  private_lane :git_tag do |options|
+    tag = options.fetch(:tag)
+    sh("cd ..
+        git fetch --all --tags --force
+        ", log:true)
+    if git_tag_exists(tag: tag, remote:true)
+        sh("cd ..
+            git tag -d #{tag}
+            git push --delete origin #{tag}
+            ", log:true)
+    end
+    sh("cd ..
+        git tag #{tag}
+        git push origin #{tag}
+        ", log:true)
   end
 end
