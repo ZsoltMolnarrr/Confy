@@ -19,6 +19,14 @@ platform :ios do
 
   podspec_path = "./Confy.podspec"
 
+  lane :build do
+    spm(
+      command: "build",
+      build_path: "./build",
+      configuration: "release"
+    )
+  end
+
   lane :release do |options|
     version = options.fetch(:version, "undefined")
     if version == "undefined"
