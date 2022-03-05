@@ -19,13 +19,23 @@ public class Config<Value: Codable> {
     }
 
     var overrideValue: Value?
-
     private var override: OptionalSource {
         let value = overrideValue
         return .init(kind: .localOverride) { value }
     }
     private let getters: [OptionalSource]
     private let `default`: Source
+
+    public convenience init(sourceName: String, getter: @escaping () -> Value?, default: @escaping () -> Value) {
+        self.init(sources: [(sourceName, getter)], default: `default`)
+    }
+
+    public init(sources: [(String, () -> Value?)], default: @escaping () -> Value) {
+        self.getters = sources.map {
+            OptionalSource(kind: .custom($0), getter: $1)
+        }
+        self.default = Source(kind: .localDefault, getter: `default`)
+    }
 
     public init(_ default: @escaping () -> Value) {
         self.getters = []
