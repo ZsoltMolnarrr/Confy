@@ -48,8 +48,8 @@ public class ConfigViewController: UIViewController {
     private var updateQueue = DispatchQueue(label: "ConfigViewController")
     private var plainDataSource: [ConfigViewModel.Section] = []
     @available(iOS 13.0, *)
-    private lazy var diffingDataSource: UITableViewDiffableDataSource<String, ConfigSnapshot> = {
-        let dataSource = UITableViewDiffableDataSource<String, ConfigSnapshot>(tableView: self.tableView) { tableView, indexPath, item in
+    private lazy var diffingDataSource: StringSectionTableViewDiffibleDataSource<ConfigSnapshot> = {
+        let dataSource = StringSectionTableViewDiffibleDataSource<ConfigSnapshot>(tableView: self.tableView) { tableView, indexPath, item in
             let cell = tableView.dequeueReusableCell(withIdentifier: "ConfigTableViewCell") as! ConfigTableViewCell
             cell.configure(viewModel: item)
             return cell
@@ -254,6 +254,15 @@ extension ConfigSnapshot: Equatable {
 extension ConfigSnapshot: Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(name)
+    }
+}
+
+@available(iOS 13.0, *)
+class StringSectionTableViewDiffibleDataSource<Item: Hashable>: UITableViewDiffableDataSource<String, Item> {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        let snapshot = snapshot()
+        guard snapshot.sectionIdentifiers.indices.contains(section) else { return nil }
+        return snapshot.sectionIdentifiers[section]
     }
 }
 
