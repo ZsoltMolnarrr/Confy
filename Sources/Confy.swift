@@ -11,12 +11,12 @@ import Foundation
 import UIKit
 #endif
 
-/// 🔧 Module header for changing perferences and showing Config UI
+/// 🔧 Module header for changing preferences and showing Config UI
 public class Confy {
     // MARK: Public interface
 
     /// 🔩 Settings of the package
-    public static var perferences = Preferences()
+    public static var preferences = Preferences()
 
     /// 💾 Default used by ConfigDomains, to store overridden values.
     /// May be set to `nil` in order to disable persistent storage.
@@ -34,8 +34,9 @@ public class Confy {
     ///   - navigationController: stack to push the screen into
     public static func pushConfigList(showing domains: ConfigDomain...,
                                       title: String? = nil,
-                                      navigationController: UINavigationController) {
-        let screen = makeConfigListScreen(domains: domains, title: title)
+                                      navigationController: UINavigationController,
+                                      preferences: Preferences? = nil) {
+        let screen = makeConfigListScreen(domains: domains, title: title, preferences: preferences)
         navigationController.pushViewController(screen, animated: true)
     }
 
@@ -43,8 +44,8 @@ public class Confy {
     /// - Parameters:
     ///   - domains: the config elements of these to display and edit
     ///   - title: title of the config list screen
-    public static func presentConfigList(showing domains: ConfigDomain..., title: String? = nil, perferences: Preferences? = nil) {
-        let screen = makeConfigListScreen(domains: domains, title: title)
+    public static func presentConfigList(showing domains: ConfigDomain..., title: String? = nil, preferences: Preferences? = nil) {
+        let screen = makeConfigListScreen(domains: domains, title: title, preferences: preferences)
         screen.addCloseButton()
         let navigationController = UINavigationController(rootViewController: screen)
         navigationController.navigationBar.prefersLargeTitles = true
@@ -59,12 +60,12 @@ public class Confy {
     ///   - domains: combined, the elemnets to display and edit
     ///   - title: title of the config list screen
     /// - Returns: Config List Screen
-    public static func makeConfigListScreen(domains: [ConfigDomain], title: String?, perferences: Preferences? = nil) -> ConfigViewController {
+    public static func makeConfigListScreen(domains: [ConfigDomain], title: String?, preferences: Preferences? = nil) -> ConfigViewController {
         let view = Confy.storyboard.instantiateViewController(withIdentifier: "list") as! ConfigViewController
         let interactor = ConfigInteractor(domains: domains)
         view.useCase = interactor
         interactor.display = view
-        view.perferences = perferences ?? Self.perferences
+        view.preferences = preferences ?? Self.preferences
         if title != nil {
             view.title = title
         }

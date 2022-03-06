@@ -14,7 +14,7 @@ public class ConfigViewController: UIViewController {
     private var searchController: UISearchController?
     private weak var editor: ConfigTexEditorViewController?
     var useCase: ConfigUseCase!
-    var perferences: Confy.Preferences!
+    var preferences: Confy.Preferences!
 
     public override func viewDidLoad() {
         super.viewDidLoad()
@@ -50,9 +50,9 @@ public class ConfigViewController: UIViewController {
     private var plainDataSource: [ConfigViewModel.Section] = []
     @available(iOS 13.0, *)
     private lazy var diffingDataSource: StringSectionTableViewDiffibleDataSource<ConfigSnapshot> = {
-        let dataSource = StringSectionTableViewDiffibleDataSource<ConfigSnapshot>(tableView: self.tableView) { [perferences] tableView, indexPath, item in
+        let dataSource = StringSectionTableViewDiffibleDataSource<ConfigSnapshot>(tableView: self.tableView) { [preferences] tableView, indexPath, item in
             let cell = tableView.dequeueReusableCell(withIdentifier: "ConfigTableViewCell") as! ConfigTableViewCell
-            cell.configure(viewModel: item, perferences: perferences!.listItem)
+            cell.configure(viewModel: item, preferences: preferences!.listItem)
             return cell
         }
         return dataSource
@@ -126,7 +126,7 @@ extension ConfigViewController: UITableViewDataSource {
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ConfigTableViewCell") as! ConfigTableViewCell
         let viewModel = config(for: indexPath)
-        cell.configure(viewModel: viewModel, perferences: perferences.listItem)
+        cell.configure(viewModel: viewModel, preferences: preferences.listItem)
         return cell
     }
 
