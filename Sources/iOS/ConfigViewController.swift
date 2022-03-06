@@ -45,22 +45,29 @@ public class ConfigViewController: UIViewController {
         navigationController?.dismiss(animated: true)
     }
 
-    private var sections: [ConfigViewModel.Section] = [] {
-        didSet {
-            tableView.reloadData()
+    private var plainDataSource: [ConfigViewModel.Section] = []
+    @available(iOS 13.0, *)
+    private lazy var diffingDataSource: UITableViewDiffableDataSource<String, String> = {
+        // FIXME: Memory leaks due to self ref
+        let dataSource = UITableViewDiffableDataSource<String, String>(tableView: self.tableView) { tableView, indexPath, itemIdentifier in
+            let cell = tableView.dequeueReusableCell(withIdentifier: "ConfigTableViewCell") as! ConfigTableViewCell
+            let viewModel = self.config(for: indexPath)
+            cell.configure(viewModel: viewModel)
+            return cell
         }
-    }
+        return dataSource
+    }()
 
     private var overrideCount: Int {
         var overrides = 0
-        sections.forEach { section in
+        plainDataSource.forEach { section in
             overrides += section.configs.filter { $0.source == .localOverride }.count
         }
         return overrides
     }
 
     private func config(for indexPath: IndexPath) -> ConfigViewModel.Config {
-        return sections[indexPath.section].configs[indexPath.row]
+        return plainDataSource[indexPath.section].configs[indexPath.row]
     }
 
     private func copy(config: ConfigViewModel.Config) {
@@ -90,15 +97,15 @@ public class ConfigViewController: UIViewController {
 
 extension ConfigViewController: UITableViewDataSource {
     public func numberOfSections(in tableView: UITableView) -> Int {
-        return sections.count
+        return plainDataSource.count
     }
 
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return sections[section].configs.count
+        return plainDataSource[section].configs.count
     }
 
     public func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return sections[section].title
+        return plainDataSource[section].title
     }
 
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -148,7 +155,30 @@ extension ConfigViewController: UITableViewDelegate {
 
 extension ConfigViewController: ConfigDisplay {
     func display(config: ConfigViewModel) {
-        sections = config.sections
+        let oldData = plainDataSource
+        plainDataSource = config.sections
+        if #available(iOS 13.0, *) {
+            var snapshot = NSDiffableDataSourceSnapshot<String, String>()
+            snapshot.appendSections(config.sections.map { $0.title })
+            config.sections.forEach { section in
+                snapshot.appendItems(section.configs.map { $0.diffId(in: section) }, toSection: section.title)
+            }
+            var reloadIds = [String]()
+            for newSection in config.sections {
+                if let oldSection = oldData.first(where: { $0.title == newSection.title }) {
+                    for newElement in newSection.configs {
+                        if let existingAsOldElement = oldSection.configs.first(where: { $0.name == newElement.name }),
+                           newElement != existingAsOldElement {
+                            reloadIds.append(newElement.diffId(in: newSection))
+                        }
+                    }
+                }
+            }
+            snapshot.reloadItems(reloadIds)
+            diffingDataSource.apply(snapshot, animatingDifferences: true)
+        } else {
+            tableView.reloadData()
+        }
         navigationItem.prompt = overrideCount > 0 ? "Currently \(overrideCount) values modified" : nil
     }
 
@@ -180,6 +210,20 @@ extension ConfigViewController {
         }
 
         alertView.frame.origin.y += keyboardSize.height / 2
+    }
+}
+
+extension ConfigViewModel.Config {
+    func diffId(in section: ConfigViewModel.Section) -> String {
+        return section.title + "/" + name
+    }
+}
+
+extension ConfigViewModel.Config: Equatable {
+    static func ==(lhs: Self, rhs: Self) -> Bool {
+        return lhs.name == rhs.name &&
+        lhs.source == rhs.source &&
+        lhs.value == rhs.value
     }
 }
 
