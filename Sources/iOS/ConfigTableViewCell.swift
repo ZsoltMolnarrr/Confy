@@ -14,11 +14,11 @@ class ConfigTableViewCell: UITableViewCell {
     @IBOutlet weak var source: UILabel!
     @IBOutlet weak var detail: UITextView!
 
-    func configure(viewModel: ConfigViewModel.Config) {
+    func configure(viewModel: ConfigSnapshot) {
         title.text = viewModel.name
         source.text = viewModel.source.name
         source.textColor = viewModel.source == .localOverride ? .red : .darkGray
-        detail.text = viewModel.value
+        detail.text = viewModel.encodedValue
     }
 }
 

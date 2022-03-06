@@ -7,7 +7,7 @@
 
 import Foundation
 
-class ConfigPresenter: ConfigUseCaseDelegate {
+class ConfigPresenter {
     weak var display: ConfigDisplay?
 
     private var searchPhrase: String?
@@ -24,21 +24,16 @@ class ConfigPresenter: ConfigUseCaseDelegate {
     private func makeViewModel(domains: [ConfigDomain]) -> ConfigViewModel {
         let sections: [ConfigViewModel.Section] = domains.map { domain -> ConfigViewModel.Section in
             let title = domain.configDomainName
-            let configs: [ConfigViewModel.Config] = domain.snapshots.map { snapshot -> ConfigViewModel.Config in
-                return ConfigViewModel.Config(domain: domain.configDomainName,
-                                              name: snapshot.name,
-                                              value: snapshot.encodedValue,
-                                              source: snapshot.source)
-            }
-            .filter({ config -> Bool in
-                if let searchPhrase = self.searchPhrase, searchPhrase != "" {
-                    return config.name.lowercased().contains(searchPhrase.lowercased())
-                } else {
-                    return true
-                }
-            })
-            .sorted { $0.name < $1.name }
-            return ConfigViewModel.Section(title: title, configs: configs)
+            let elements = domain.snapshots
+                .filter({ config -> Bool in
+                    if let searchPhrase = self.searchPhrase, searchPhrase != "" {
+                        return config.name.lowercased().contains(searchPhrase.lowercased())
+                    } else {
+                        return true
+                    }
+                })
+                .sorted { $0.name < $1.name }
+            return ConfigViewModel.Section(title: title, elements: elements)
         }
         return ConfigViewModel(sections: sections)
     }

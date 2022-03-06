@@ -7,13 +7,15 @@
 
 import Foundation
 
-class ConfigInteractor: ConfigUseCase {
-    // swiftlint:disable:next weak_delegate
-    var delegate: ConfigUseCaseDelegate!
-
+class ConfigInteractor {
+    weak var display: ConfigDisplay?
+    private var searchPhrase: String?
     private let domains: [ConfigDomain]
 
     init(domains: [ConfigDomain]) {
+        guard !domains.map({ $0.configDomainName }).containsDuplicates() else {
+            fatalError("ERROR! Config UI cannot handle multiple domains with the same name.")
+        }
         self.domains = domains
     }
 
@@ -21,30 +23,61 @@ class ConfigInteractor: ConfigUseCase {
         return domains.first { $0.configDomainName == named }
     }
 
+    private func configsDidUpdate(domains: [ConfigDomain]) {
+        display?.display(config: makeViewModel(domains: domains))
+    }
+
+    private func makeViewModel(domains: [ConfigDomain]) -> ConfigViewModel {
+        let sections: [ConfigViewModel.Section] = domains.map { domain -> ConfigViewModel.Section in
+            let title = domain.configDomainName
+            let elements = domain.snapshots
+                .filter({ config -> Bool in
+                    if let searchPhrase = self.searchPhrase, searchPhrase != "" {
+                        return config.name.lowercased().contains(searchPhrase.lowercased())
+                    } else {
+                        return true
+                    }
+                })
+                .sorted { $0.name < $1.name }
+            return ConfigViewModel.Section(title: title, elements: elements)
+        }
+        return ConfigViewModel(sections: sections)
+    }
+}
+
+extension ConfigInteractor: ConfigUseCase {
+
     func load() {
-        delegate.configsDidUpdate(domains: domains)
+        configsDidUpdate(domains: domains)
     }
 
     func search(for phrase: String) {
-        delegate.didSearch(domains: domains, phrase: phrase)
+        searchPhrase = phrase
+        display?.display(config: makeViewModel(domains: domains))
     }
 
-    func overrideConfig(domain domainName: String, key: String, with newValue: String) {
+    func overrideConfig(domainName: String, key: String, with newValue: String) {
         do {
             try domain(named: domainName)?.override(propertyName: key, with: newValue)
-            delegate.configsDidUpdate(domains: domains)
+            configsDidUpdate(domains: domains)
         } catch {
-            delegate.failedToOverride(key: key, error: error)
+            display?.errorAlert(title: "Failed to override \(key)", message: error.localizedDescription)
         }
     }
 
-    func resetConfig(domain domainName: String, key: String) {
+    func resetConfig(domainName: String, key: String) {
         domain(named: domainName)?.reset(propertyName: key)
-        delegate.configsDidUpdate(domains: domains)
+        configsDidUpdate(domains: domains)
     }
 
     func resetAllConfigs() {
         domains.forEach { $0.resetAll() }
-        delegate.configsDidUpdate(domains: domains)
+        configsDidUpdate(domains: domains)
+    }
+}
+
+extension Array where Element: Hashable {
+    func containsDuplicates() -> Bool {
+        Set(self).count < count
     }
 }

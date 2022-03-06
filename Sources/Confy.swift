@@ -62,10 +62,8 @@ public class Confy {
     public static func makeConfigListScreen(domains: [ConfigDomain], title: String?) -> ConfigViewController {
         let view = Confy.storyboard.instantiateViewController(withIdentifier: "list") as! ConfigViewController
         let interactor = ConfigInteractor(domains: domains)
-        let presenter = ConfigPresenter()
         view.useCase = interactor
-        interactor.delegate = presenter
-        presenter.display = view
+        interactor.display = view
         if title != nil {
             view.title = title
         }

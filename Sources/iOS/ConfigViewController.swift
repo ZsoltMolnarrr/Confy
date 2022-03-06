@@ -45,14 +45,13 @@ public class ConfigViewController: UIViewController {
         navigationController?.dismiss(animated: true)
     }
 
+    private var updateQueue = DispatchQueue(label: "ConfigViewController")
     private var plainDataSource: [ConfigViewModel.Section] = []
     @available(iOS 13.0, *)
-    private lazy var diffingDataSource: UITableViewDiffableDataSource<String, String> = {
-        // FIXME: Memory leaks due to self ref
-        let dataSource = UITableViewDiffableDataSource<String, String>(tableView: self.tableView) { tableView, indexPath, itemIdentifier in
+    private lazy var diffingDataSource: UITableViewDiffableDataSource<String, ConfigSnapshot> = {
+        let dataSource = UITableViewDiffableDataSource<String, ConfigSnapshot>(tableView: self.tableView) { tableView, indexPath, item in
             let cell = tableView.dequeueReusableCell(withIdentifier: "ConfigTableViewCell") as! ConfigTableViewCell
-            let viewModel = self.config(for: indexPath)
-            cell.configure(viewModel: viewModel)
+            cell.configure(viewModel: item)
             return cell
         }
         return dataSource
@@ -61,29 +60,41 @@ public class ConfigViewController: UIViewController {
     private var overrideCount: Int {
         var overrides = 0
         plainDataSource.forEach { section in
-            overrides += section.configs.filter { $0.source == .localOverride }.count
+            overrides += section.elements.filter { $0.source == .localOverride }.count
         }
         return overrides
     }
 
-    private func config(for indexPath: IndexPath) -> ConfigViewModel.Config {
-        return plainDataSource[indexPath.section].configs[indexPath.row]
+    private func domainName(for indexPath: IndexPath) -> String {
+        if #available(iOS 13.0, *) {
+            return plainDataSource[indexPath.section].title
+        } else {
+            return plainDataSource[indexPath.section].title
+        }
     }
 
-    private func copy(config: ConfigViewModel.Config) {
+    private func config(for indexPath: IndexPath) -> ConfigSnapshot {
+        if #available(iOS 13.0, *) {
+            return diffingDataSource.itemIdentifier(for: indexPath)!
+        } else {
+            return plainDataSource[indexPath.section].elements[indexPath.row]
+        }
+    }
+
+    private func copy(config: ConfigSnapshot) {
         let pasteboard = UIPasteboard.general
-        pasteboard.string = config.value
+        pasteboard.string = config.encodedValue
         let alert = UIAlertController(title: "Copied", message: nil, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
         present(alert, animated: true)
     }
 
-    private func edit(config: ConfigViewModel.Config) {
+    private func edit(config: ConfigSnapshot, domainName: String) {
         let editor = Confy.storyboard.instantiateViewController(withIdentifier: "editor") as! ConfigTexEditorViewController
         editor.key = config.name
-        editor.value = config.value
+        editor.value = config.encodedValue
         editor.onSave = { [weak self] newValue in
-            self?.useCase.overrideConfig(domain: config.domain, key: config.name, with: newValue)
+            self?.useCase.overrideConfig(domainName: domainName, key: config.name, with: newValue)
             self?.navigationController?.popViewController(animated: true)
         }
         if isPrimitive(value: config.value) {
@@ -104,7 +115,7 @@ extension ConfigViewController: UITableViewDataSource {
     }
 
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return plainDataSource[section].configs.count
+        return plainDataSource[section].elements.count
     }
 
     public func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -121,6 +132,7 @@ extension ConfigViewController: UITableViewDataSource {
     public func tableView(_ tableView: UITableView,
                    trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let config = self.config(for: indexPath)
+        let domainName = domainName(for: indexPath)
         let copy = UIContextualAction(style: .normal, title: "Copy") { _, _, completionHandler in
             completionHandler(true)
             self.copy(config: config)
@@ -129,13 +141,13 @@ extension ConfigViewController: UITableViewDataSource {
 
         let edit = UIContextualAction(style: .normal, title: "Edit") { _, _, completionHandler in
             completionHandler(true)
-            self.edit(config: config)
+            self.edit(config: config, domainName: domainName)
         }
         edit.backgroundColor = .systemOrange
 
         let reset = UIContextualAction(style: .normal, title: "Reset") { _, _, completionHandler in
             completionHandler(true)
-            self.useCase.resetConfig(domain: config.domain, key: config.name)
+            self.useCase.resetConfig(domainName: domainName, key: config.name)
         }
         reset.backgroundColor = config.source == .localOverride ? .systemRed : .gray
 
@@ -152,37 +164,40 @@ extension ConfigViewController: UISearchResultsUpdating {
 extension ConfigViewController: UITableViewDelegate {
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        edit(config: config(for: indexPath))
+        let domainName = domainName(for: indexPath)
+        edit(config: config(for: indexPath), domainName: domainName)
     }
 }
 
 extension ConfigViewController: ConfigDisplay {
     func display(config: ConfigViewModel) {
-        let oldData = plainDataSource
-        plainDataSource = config.sections
         if #available(iOS 13.0, *) {
-            var snapshot = NSDiffableDataSourceSnapshot<String, String>()
+            let oldData = plainDataSource
+            var snapshot = NSDiffableDataSourceSnapshot<String, ConfigSnapshot>()
             snapshot.appendSections(config.sections.map { $0.title })
             config.sections.forEach { section in
-                snapshot.appendItems(section.configs.map { $0.diffId(in: section) }, toSection: section.title)
+                snapshot.appendItems(section.elements.map { $0 }, toSection: section.title)
             }
-            var reloadIds = [String]()
+            var reloadItems = [ConfigSnapshot]()
             for newSection in config.sections {
                 if let oldSection = oldData.first(where: { $0.title == newSection.title }) {
-                    for newElement in newSection.configs {
-                        if let existingAsOldElement = oldSection.configs.first(where: { $0.name == newElement.name }),
+                    for newElement in newSection.elements {
+                        if let existingAsOldElement = oldSection.elements.first(where: { $0.name == newElement.name }),
                            newElement != existingAsOldElement {
-                            reloadIds.append(newElement.diffId(in: newSection))
+                            reloadItems.append(newElement)
                         }
                     }
                 }
             }
-            snapshot.reloadItems(reloadIds)
-            diffingDataSource.apply(snapshot, animatingDifferences: true)
+            snapshot.reloadItems(reloadItems)
+            self.plainDataSource = config.sections
+            self.diffingDataSource.apply(snapshot, animatingDifferences: true)
         } else {
+            plainDataSource = config.sections
             tableView.reloadData()
         }
-        navigationItem.prompt = overrideCount > 0 ? "Currently \(overrideCount) values modified" : nil
+        let title = "Currently \(overrideCount) \(overrideCount > 1 ? "values" : "value") modified"
+        navigationItem.prompt = overrideCount > 0 ? title : nil
     }
 
     func errorAlert(title: String, message: String) {
@@ -216,17 +231,29 @@ extension ConfigViewController {
     }
 }
 
-extension ConfigViewModel.Config {
+extension ConfigViewModel.Section: Hashable {
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(title)
+    }
+}
+
+extension ConfigSnapshot {
     func diffId(in section: ConfigViewModel.Section) -> String {
         return section.title + "/" + name
     }
 }
 
-extension ConfigViewModel.Config: Equatable {
+extension ConfigSnapshot: Equatable {
     static func ==(lhs: Self, rhs: Self) -> Bool {
         return lhs.name == rhs.name &&
         lhs.source == rhs.source &&
-        lhs.value == rhs.value
+        lhs.encodedValue == rhs.encodedValue
+    }
+}
+
+extension ConfigSnapshot: Hashable {
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(name)
     }
 }
 

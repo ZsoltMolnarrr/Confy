@@ -10,15 +10,9 @@ import Foundation
 protocol ConfigUseCase: AnyObject {
     func load()
     func search(for phrase: String)
-    func overrideConfig(domain: String, key: String, with newValue: String)
-    func resetConfig(domain: String, key: String)
+    func overrideConfig(domainName: String, key: String, with newValue: String)
+    func resetConfig(domainName: String, key: String)
     func resetAllConfigs()
-}
-
-protocol ConfigUseCaseDelegate: AnyObject {
-    func didSearch(domains: [ConfigDomain], phrase: String)
-    func configsDidUpdate(domains: [ConfigDomain])
-    func failedToOverride(key: String, error: Error)
 }
 
 protocol ConfigDisplay: AnyObject {
@@ -28,16 +22,8 @@ protocol ConfigDisplay: AnyObject {
 
 struct ConfigViewModel {
     let sections: [Section]
-
-    struct Section {
+    struct Section: Equatable {
         public let title: String
-        public let configs: [Config]
-    }
-
-    struct Config {
-        public let domain: String
-        public let name: String
-        public let value: String
-        public let source: ConfigSourceKind
+        public let elements: [ConfigSnapshot]
     }
 }
