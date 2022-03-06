@@ -5,6 +5,8 @@
 //  Created by Zsolt Molnar on 2021. 01. 11..
 //
 
+#if canImport(UIKit)
+
 import UIKit
 
 class ConfigTexEditorViewController: UITableViewController {
@@ -55,3 +57,5 @@ extension ConfigTexEditorViewController: UITextViewDelegate {
         UIView.setAnimationsEnabled(true)
     }
 }
+
+#endif

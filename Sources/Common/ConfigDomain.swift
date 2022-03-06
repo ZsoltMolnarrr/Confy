@@ -103,7 +103,7 @@ extension ConfigDomain {
 
 struct ConfigSnapshot {
     let name: String
-    let source: SourceKind
+    let source: ConfigSourceKind
     let encodedValue: String
     let value: Any
 }
@@ -135,7 +135,7 @@ extension Config: OverridableProperty where Value: Codable {
                      value: value)
     }
 
-    var valueWithSource: (String, SourceKind) {
+    var valueWithSource: (String, ConfigSourceKind) {
         let (value, source) = valueWithSourceName
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted

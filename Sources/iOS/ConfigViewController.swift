@@ -5,6 +5,8 @@
 //  Created by Molnar Zsolt on 23/06/2020.
 //
 
+#if canImport(UIKit)
+
 import UIKit
 
 public class ConfigViewController: UIViewController {
@@ -145,12 +147,12 @@ extension ConfigViewController: UITableViewDelegate {
 }
 
 extension ConfigViewController: ConfigDisplay {
-    public func display(config: ConfigViewModel) {
+    func display(config: ConfigViewModel) {
         sections = config.sections
         navigationItem.prompt = overrideCount > 0 ? "Currently \(overrideCount) values modified" : nil
     }
 
-    public func errorAlert(title: String, message: String) {
+    func errorAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
         present(alert, animated: true, completion: nil)
@@ -180,3 +182,5 @@ extension ConfigViewController {
         alertView.frame.origin.y += keyboardSize.height / 2
     }
 }
+
+#endif

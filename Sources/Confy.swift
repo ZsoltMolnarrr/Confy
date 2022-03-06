@@ -6,7 +6,10 @@
 //
 
 import Foundation
+
+#if canImport(UIKit)
 import UIKit
+#endif
 
 /// 🔧 Module header for changing perferences and showing Config UI
 public class Confy {
@@ -19,6 +22,10 @@ public class Confy {
     /// May be set to `nil` in order to disable persistent storage.
     /// If changing this value, make sure to perform it before initializing ConfigDomains.
     public static var defaultPersistentStore: PersistentConfigStore? = UserDefaultsConfigStore()
+
+    #if canImport(UIKit)
+
+    static let storyboard = UIStoryboard(name: "Confy", bundle: .confy)
 
     /// ➡️ Creates Config List screen, displaying configs of the given ConfigDomains, and pushes into the given navigation controller
     /// - Parameters:
@@ -64,15 +71,14 @@ public class Confy {
         }
         return view
     }
+
+    #endif
 }
 
 extension Confy {
     public struct Preferences {
         // var ... = ...
     }
-
-    // MARK: Internals
-    static let storyboard = UIStoryboard(name: "Config", bundle: .confy)
 }
 
 extension Bundle {

@@ -1,5 +1,5 @@
 //
-//  SourceKind.swift
+//  ConfigSourceKind.swift
 //  Confy
 //
 //  Created by Zsolt Molnár on 2022. 03. 04..
@@ -7,13 +7,13 @@
 
 import Foundation
 
-public enum SourceKind {
+enum ConfigSourceKind {
     case localDefault
     case custom(String)
     case localOverride
 }
 
-public extension SourceKind {
+extension ConfigSourceKind {
     var name: String {
         switch self {
         case .localDefault:
@@ -26,4 +26,4 @@ public extension SourceKind {
     }
 }
 
-extension SourceKind: Equatable {}
+extension ConfigSourceKind: Equatable {}

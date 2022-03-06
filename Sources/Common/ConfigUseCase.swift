@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol ConfigUseCase: AnyObject {
+protocol ConfigUseCase: AnyObject {
     func load()
     func search(for phrase: String)
     func overrideConfig(domain: String, key: String, with newValue: String)
@@ -15,29 +15,29 @@ public protocol ConfigUseCase: AnyObject {
     func resetAllConfigs()
 }
 
-public protocol ConfigUseCaseDelegate: AnyObject {
+protocol ConfigUseCaseDelegate: AnyObject {
     func didSearch(domains: [ConfigDomain], phrase: String)
     func configsDidUpdate(domains: [ConfigDomain])
     func failedToOverride(key: String, error: Error)
 }
 
-public protocol ConfigDisplay: AnyObject {
+protocol ConfigDisplay: AnyObject {
     func display(config: ConfigViewModel)
     func errorAlert(title: String, message: String)
 }
 
-public struct ConfigViewModel {
-    public let sections: [Section]
+struct ConfigViewModel {
+    let sections: [Section]
 
-    public struct Section {
+    struct Section {
         public let title: String
         public let configs: [Config]
     }
 
-    public struct Config {
+    struct Config {
         public let domain: String
         public let name: String
         public let value: String
-        public let source: SourceKind
+        public let source: ConfigSourceKind
     }
 }

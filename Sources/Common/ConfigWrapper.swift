@@ -9,12 +9,12 @@ import Foundation
 
 @propertyWrapper
 public class Config<Value: Codable> {
-    public struct Source {
-        var kind: SourceKind
+    struct Source {
+        var kind: ConfigSourceKind
         var getter: () -> Value
     }
-    public struct OptionalSource {
-        var kind: SourceKind
+    struct OptionalSource {
+        var kind: ConfigSourceKind
         var getter: () -> Value?
     }
 
@@ -43,7 +43,7 @@ public class Config<Value: Codable> {
                              getter: `default`)
     }
 
-    var valueWithSourceName: (Value, SourceKind) {
+    var valueWithSourceName: (Value, ConfigSourceKind) {
         var overrideAndGetters = getters
         overrideAndGetters.insert(override, at: 0)
         for source in overrideAndGetters {

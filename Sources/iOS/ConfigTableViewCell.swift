@@ -5,6 +5,8 @@
 //  Created by Molnar Zsolt on 23/06/2020.
 //
 
+#if canImport(UIKit)
+
 import UIKit
 
 class ConfigTableViewCell: UITableViewCell {
@@ -23,3 +25,5 @@ class ConfigTableViewCell: UITableViewCell {
 extension UINib {
     static let configTableViewCell = UINib(nibName: "ConfigTableViewCell", bundle: .confy)
 }
+
+#endif
