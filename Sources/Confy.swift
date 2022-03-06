@@ -25,8 +25,6 @@ public class Confy {
 
     #if canImport(UIKit)
 
-    static let storyboard = UIStoryboard(name: "Confy", bundle: .confy)
-
     /// ➡️ Creates Config List screen, displaying configs of the given ConfigDomains, and pushes into the given navigation controller
     /// - Parameters:
     ///   - domains: the config elements of these to display and edit
@@ -78,11 +76,10 @@ public class Confy {
 extension Confy {
     public struct Preferences {
         public init() { }
-
+        #if canImport(UIKit)
         public var listItem = ListItem()
         public struct ListItem {
             public init() { }
-
             /// 🥢 Determines wheter of not the current source of a config is shown
             public var showCurrentSource = true
             /// 🎈 Text color of the source label in case override is applied
@@ -91,7 +88,14 @@ extension Confy {
             /// For example: `["Firebase" : .orange]`
             public var sourcePalette: [String: UIColor] = [:]
         }
+        #endif
     }
+}
+
+extension Confy {
+    #if canImport(UIKit)
+    static let storyboard = UIStoryboard(name: "Confy", bundle: .confy)
+    #endif
 }
 
 extension Bundle {
