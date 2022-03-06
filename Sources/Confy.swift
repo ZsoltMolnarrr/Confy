@@ -43,7 +43,7 @@ public class Confy {
     /// - Parameters:
     ///   - domains: the config elements of these to display and edit
     ///   - title: title of the config list screen
-    public static func presentConfigList(showing domains: ConfigDomain..., title: String? = nil) {
+    public static func presentConfigList(showing domains: ConfigDomain..., title: String? = nil, perferences: Preferences? = nil) {
         let screen = makeConfigListScreen(domains: domains, title: title)
         screen.addCloseButton()
         let navigationController = UINavigationController(rootViewController: screen)
@@ -59,11 +59,12 @@ public class Confy {
     ///   - domains: combined, the elemnets to display and edit
     ///   - title: title of the config list screen
     /// - Returns: Config List Screen
-    public static func makeConfigListScreen(domains: [ConfigDomain], title: String?) -> ConfigViewController {
+    public static func makeConfigListScreen(domains: [ConfigDomain], title: String?, perferences: Preferences? = nil) -> ConfigViewController {
         let view = Confy.storyboard.instantiateViewController(withIdentifier: "list") as! ConfigViewController
         let interactor = ConfigInteractor(domains: domains)
         view.useCase = interactor
         interactor.display = view
+        view.perferences = perferences ?? Self.perferences
         if title != nil {
             view.title = title
         }
@@ -75,7 +76,20 @@ public class Confy {
 
 extension Confy {
     public struct Preferences {
-        // var ... = ...
+        public init() { }
+
+        public var listItem = ListItem()
+        public struct ListItem {
+            public init() { }
+
+            /// 🥢 Determines wheter of not the current source of a config is shown
+            public var showCurrentSource = true
+            /// 🎈 Text color of the source label in case override is applied
+            public var overrideColor: UIColor = .red
+            /// 🎨 Assign specific colors to custom config sources with matching names.
+            /// For example: `["Firebase" : .orange]`
+            public var sourcePalette: [String: UIColor] = [:]
+        }
     }
 }
 
