@@ -86,6 +86,9 @@ public class ConfigViewController: UIViewController {
             self?.useCase.overrideConfig(domain: config.domain, key: config.name, with: newValue)
             self?.navigationController?.popViewController(animated: true)
         }
+        if isPrimitive(value: config.value) {
+            editor.returnKeyType = .done
+        }
         navigationController?.pushViewController(editor, animated: true)
         self.editor = editor
     }

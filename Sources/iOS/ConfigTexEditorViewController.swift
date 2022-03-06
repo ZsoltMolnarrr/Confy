@@ -17,11 +17,14 @@ class ConfigTexEditorViewController: UITableViewController {
     @IBOutlet private weak var keyLabel: UILabel!
     @IBOutlet private weak var valueTextView: UITextView!
 
+    var returnKeyType: UIReturnKeyType = .default
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
         keyLabel.text = key
         valueTextView.text = value
+        valueTextView.returnKeyType = returnKeyType
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -31,8 +34,12 @@ class ConfigTexEditorViewController: UITableViewController {
         valueTextView.becomeFirstResponder()
     }
 
-    @IBAction func savePressed(_ sender: UIBarButtonItem) {
+    private func save() {
         onSave?(valueTextView.text ?? "")
+    }
+
+    @IBAction func savePressed(_ sender: UIBarButtonItem) {
+        save()
     }
 
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -55,6 +62,14 @@ extension ConfigTexEditorViewController: UITextViewDelegate {
         tableView.beginUpdates()
         tableView.endUpdates()
         UIView.setAnimationsEnabled(true)
+    }
+
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        if (textView.returnKeyType == .done && text == "\n") {
+            textView.resignFirstResponder()
+            save()
+        }
+        return true
     }
 }
 
