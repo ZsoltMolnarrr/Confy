@@ -231,12 +231,6 @@ extension ConfigViewController {
     }
 }
 
-extension ConfigViewModel.Section: Hashable {
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(title)
-    }
-}
-
 extension ConfigSnapshot {
     func diffId(in section: ConfigViewModel.Section) -> String {
         return section.title + "/" + name

@@ -22,7 +22,7 @@ protocol ConfigDisplay: AnyObject {
 
 struct ConfigViewModel {
     let sections: [Section]
-    struct Section: Equatable {
+    struct Section {
         public let title: String
         public let elements: [ConfigSnapshot]
     }
