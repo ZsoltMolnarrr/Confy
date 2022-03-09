@@ -34,6 +34,18 @@ public class Confy {
                                       title: String? = nil,
                                       navigationController: UINavigationController,
                                       preferences: Preferences? = nil) {
+        pushConfigList(showing: domains, title: title, navigationController: navigationController, preferences: preferences)
+    }
+
+    /// ➡️ Creates Config List screen, displaying configs of the given ConfigDomains, and pushes into the given navigation controller
+    /// - Parameters:
+    ///   - domains: the config elements of these to display and edit
+    ///   - title: title of the config list screen
+    ///   - navigationController: stack to push the screen into
+    public static func pushConfigList(showing domains: [ConfigDomain],
+                                      title: String? = nil,
+                                      navigationController: UINavigationController,
+                                      preferences: Preferences? = nil) {
         let screen = makeConfigListScreen(domains: domains, title: title, preferences: preferences)
         navigationController.pushViewController(screen, animated: true)
     }
@@ -43,6 +55,14 @@ public class Confy {
     ///   - domains: the config elements of these to display and edit
     ///   - title: title of the config list screen
     public static func presentConfigList(showing domains: ConfigDomain..., title: String? = nil, preferences: Preferences? = nil) {
+        presentConfigList(showing: domains, title: title, preferences: preferences)
+    }
+
+    /// ⬆️ Creates Config List screen, displaying configs of the given ConfigDomains, and modally presents on the topmost ViewController
+    /// - Parameters:
+    ///   - domains: the config elements of these to display and edit
+    ///   - title: title of the config list screen
+    public static func presentConfigList(showing domains: [ConfigDomain], title: String? = nil, preferences: Preferences? = nil) {
         let screen = makeConfigListScreen(domains: domains, title: title, preferences: preferences)
         screen.addCloseButton()
         let navigationController = UINavigationController(rootViewController: screen)
@@ -51,6 +71,7 @@ public class Confy {
             (rootViewController.presentedViewController ?? rootViewController)?.present(navigationController, animated: true)
         }
     }
+
 
     /// 🏭 Creates Config List Screen
     /// May be used with custom presentation method
