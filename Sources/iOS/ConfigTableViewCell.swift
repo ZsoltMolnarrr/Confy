@@ -14,7 +14,7 @@ class ConfigTableViewCell: UITableViewCell {
     @IBOutlet weak var source: UILabel!
     @IBOutlet weak var detail: UITextView!
 
-    func configure(viewModel: ConfigSnapshot, preferences: Confy.Preferences.ListItem) {
+    func configure(viewModel: ConfigSnapshot, preferences: Confy.Preferences.List) {
         title.text = viewModel.name
 
         source.isHidden = !preferences.showCurrentSource

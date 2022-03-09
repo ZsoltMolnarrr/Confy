@@ -80,11 +80,12 @@ public class Confy {
     ///   - title: title of the config list screen
     /// - Returns: Config List Screen
     public static func makeConfigListScreen(domains: [ConfigDomain], title: String?, preferences: Preferences? = nil) -> ConfigViewController {
+        let resolvedPreferences = preferences ?? Self.preferences
         let view = Confy.storyboard.instantiateViewController(withIdentifier: "list") as! ConfigViewController
-        let interactor = ConfigInteractor(domains: domains)
+        let interactor = ConfigInteractor(domains: domains, preferences: resolvedPreferences)
         view.useCase = interactor
         interactor.display = view
-        view.preferences = preferences ?? Self.preferences
+        view.preferences = resolvedPreferences
         if title != nil {
             view.title = title
         }
@@ -97,9 +98,16 @@ public class Confy {
 extension Confy {
     public struct Preferences {
         public init() { }
+        /// 🔎 Search options
+        public var search = Search()
+        public struct Search {
+            /// 🗂 Find items where embedding section title matches
+            public var matchWithSectionTitle = true
+        }
         #if canImport(UIKit)
-        public var listItem = ListItem()
-        public struct ListItem {
+        /// 📜 Appearance of list and items
+        public var list = List()
+        public struct List {
             public init() { }
             /// 🥢 Determines wheter of not the current source of a config is shown
             public var showCurrentSource = true

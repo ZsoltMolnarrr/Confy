@@ -9,14 +9,16 @@ import Foundation
 
 class ConfigInteractor {
     weak var display: ConfigDisplay?
+    private var preferences: Confy.Preferences
     private var searchPhrase: String?
     private let domains: [ConfigDomain]
 
-    init(domains: [ConfigDomain]) {
+    init(domains: [ConfigDomain], preferences: Confy.Preferences) {
         guard !domains.map({ $0.configDomainName }).containsDuplicates() else {
             fatalError("ERROR! Config UI cannot handle multiple domains with the same name.")
         }
         self.domains = domains
+        self.preferences = preferences
     }
 
     private func domain(named: String) -> ConfigDomain? {
@@ -31,9 +33,13 @@ class ConfigInteractor {
         let sections: [ConfigViewModel.Section] = domains.map { domain -> ConfigViewModel.Section in
             let title = domain.configDomainName
             let elements = domain.snapshots
-                .filter({ config -> Bool in
+                .filter({ [preferences] config -> Bool in
                     if let searchPhrase = self.searchPhrase, searchPhrase != "" {
-                        return config.name.lowercased().contains(searchPhrase.lowercased())
+                        var wordsToCheck = [config.name]
+                        if preferences.search.matchWithSectionTitle {
+                            wordsToCheck.append(domain.configDomainName)
+                        }
+                        return wordsToCheck.map { $0.lowercased() }.contains { $0.contains(searchPhrase.lowercased()) }
                     } else {
                         return true
                     }

@@ -52,7 +52,7 @@ public class ConfigViewController: UIViewController {
     private lazy var diffingDataSource: StringSectionTableViewDiffibleDataSource<ConfigSnapshot> = {
         let dataSource = StringSectionTableViewDiffibleDataSource<ConfigSnapshot>(tableView: self.tableView) { [preferences] tableView, indexPath, item in
             let cell = tableView.dequeueReusableCell(withIdentifier: "ConfigTableViewCell") as! ConfigTableViewCell
-            cell.configure(viewModel: item, preferences: preferences!.listItem)
+            cell.configure(viewModel: item, preferences: preferences!.list)
             return cell
         }
         return dataSource
@@ -126,7 +126,7 @@ extension ConfigViewController: UITableViewDataSource {
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ConfigTableViewCell") as! ConfigTableViewCell
         let viewModel = config(for: indexPath)
-        cell.configure(viewModel: viewModel, preferences: preferences.listItem)
+        cell.configure(viewModel: viewModel, preferences: preferences.list)
         return cell
     }
 
