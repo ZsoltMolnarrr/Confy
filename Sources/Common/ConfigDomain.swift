@@ -14,8 +14,19 @@ public protocol ConfigDomain: AnyObject {
 }
 
 public extension ConfigDomain {
+    var childDomains: [ConfigDomain] {
+        let mirror = Mirror(reflecting: self)
+        return mirror.children
+            .compactMap { (label: String?, value: Any) -> (String, ConfigDomain)? in
+                guard let label = label, let domain = value as? ConfigDomain else { return nil }
+                return (label, domain)
+            }
+            .sorted { $0.0 < $1.0 } // Alphabetical sort
+            .map { $0.1 } // Drop the label
+    }
+
     var configStore: PersistentConfigStore? {
-        Confy.defaultPersistentStore
+        Confy.settings.persistence.defaultStore
     }
 
     var configDomainName: String {
@@ -27,6 +38,16 @@ public extension ConfigDomain {
     }
 
     func restoreOverrides() {
+        if Confy.settings.persistence.restoreOnlyInDebugBuildConfiguration {
+            #if DEBUG
+            performRestore()
+            #endif
+        } else {
+            performRestore()
+        }
+    }
+
+    private func performRestore() {
         guard let configStore = configStore else { return }
         let restoredValues = configStore.load(domain: configDomainName)
         for (key, value) in restoredValues {

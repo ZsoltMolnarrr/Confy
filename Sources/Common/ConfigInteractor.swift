@@ -9,20 +9,20 @@ import Foundation
 
 class ConfigInteractor {
     weak var display: ConfigDisplay?
-    private var preferences: Confy.Preferences
+    private var settings: Settings
     private var searchPhrase: String?
     private let domains: [ConfigDomain]
 
-    init(domains: [ConfigDomain], preferences: Confy.Preferences) {
+    init(domains: [ConfigDomain], settings: Settings) {
         guard !domains.map({ $0.configDomainName }).containsDuplicates() else {
             fatalError("ERROR! Config UI cannot handle multiple domains with the same name.")
         }
         self.domains = domains
-        self.preferences = preferences
+        self.settings = settings
     }
 
     private func domain(named: String) -> ConfigDomain? {
-        return domains.first { $0.configDomainName == named }
+        return domains.first { $0.configDomainName.dropPrefixes(by: settings) == named }
     }
 
     private func configsDidUpdate(domains: [ConfigDomain]) {
@@ -31,12 +31,12 @@ class ConfigInteractor {
 
     private func makeViewModel(domains: [ConfigDomain]) -> ConfigViewModel {
         let sections: [ConfigViewModel.Section] = domains.map { domain -> ConfigViewModel.Section in
-            let title = domain.configDomainName
+            var title = domain.configDomainName.dropPrefixes(by: settings)
             let elements = domain.snapshots
-                .filter({ [preferences] config -> Bool in
+                .filter({ [settings] config -> Bool in
                     if let searchPhrase = self.searchPhrase, searchPhrase != "" {
                         var wordsToCheck = [config.name]
-                        if preferences.search.matchWithSectionTitle {
+                        if settings.search.matchWithSectionTitle {
                             wordsToCheck.append(domain.configDomainName)
                         }
                         return wordsToCheck.map { $0.lowercased() }.contains { $0.contains(searchPhrase.lowercased()) }
@@ -85,5 +85,16 @@ extension ConfigInteractor: ConfigUseCase {
 extension Array where Element: Hashable {
     func containsDuplicates() -> Bool {
         Set(self).count < count
+    }
+}
+
+private extension String {
+    func dropPrefixes(by settings: Settings) -> String {
+        let separator = Character(".") // Swift type names use dot separated segments
+        if settings.list.dropSectionTitlePrefixes && self.contains(separator),
+           let lastSegment = self.split(separator: separator).last {
+            return String(lastSegment)
+        }
+        return self
     }
 }

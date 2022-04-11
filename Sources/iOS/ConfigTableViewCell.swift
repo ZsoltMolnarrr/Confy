@@ -14,17 +14,17 @@ class ConfigTableViewCell: UITableViewCell {
     @IBOutlet weak var source: UILabel!
     @IBOutlet weak var detail: UITextView!
 
-    func configure(viewModel: ConfigSnapshot, preferences: Confy.Preferences.List) {
+    func configure(viewModel: ConfigSnapshot, settings: Settings.List) {
         title.text = viewModel.name
 
-        source.isHidden = !preferences.showCurrentSource
-        if preferences.showCurrentSource {
+        source.isHidden = !settings.showCurrentSource
+        if settings.showCurrentSource {
             var sourceColor = UIColor.darkGray
             switch viewModel.source {
             case .localOverride:
-                sourceColor = preferences.overrideColor
+                sourceColor = settings.overrideColor
             case .custom(let name):
-                if let customColor = preferences.sourcePalette[name] {
+                if let customColor = settings.sourcePalette[name] {
                     sourceColor = customColor
                 }
             default:

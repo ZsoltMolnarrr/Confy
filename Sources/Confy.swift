@@ -11,17 +11,12 @@ import Foundation
 import UIKit
 #endif
 
-/// 🔧 Module header for changing preferences and showing Config UI
+/// 👋 Show/create ConfigViewController, change defaults
 public class Confy {
     // MARK: Public interface
 
-    /// 🔩 Settings of the package
-    public static var preferences = Preferences()
-
-    /// 💾 Default used by ConfigDomains, to store overridden values.
-    /// May be set to `nil` in order to disable persistent storage.
-    /// If changing this value, make sure to perform it before initializing ConfigDomains.
-    public static var defaultPersistentStore: PersistentConfigStore? = UserDefaultsConfigStore()
+    /// 🔩 Settings to be used by default
+    public static var settings = Settings()
 
     #if canImport(UIKit)
 
@@ -33,8 +28,8 @@ public class Confy {
     public static func pushConfigList(showing domains: ConfigDomain...,
                                       title: String? = nil,
                                       navigationController: UINavigationController,
-                                      preferences: Preferences? = nil) {
-        pushConfigList(showing: domains, title: title, navigationController: navigationController, preferences: preferences)
+                                      settings: Settings? = nil) {
+        pushConfigList(showing: domains, title: title, navigationController: navigationController, settings: settings)
     }
 
     /// ➡️ Creates Config List screen, displaying configs of the given ConfigDomains, and pushes into the given navigation controller
@@ -45,8 +40,8 @@ public class Confy {
     public static func pushConfigList(showing domains: [ConfigDomain],
                                       title: String? = nil,
                                       navigationController: UINavigationController,
-                                      preferences: Preferences? = nil) {
-        let screen = makeConfigListScreen(domains: domains, title: title, preferences: preferences)
+                                      settings: Settings? = nil) {
+        let screen = makeConfigListScreen(domains: domains, title: title, settings: settings)
         navigationController.pushViewController(screen, animated: true)
     }
 
@@ -54,16 +49,16 @@ public class Confy {
     /// - Parameters:
     ///   - domains: the config elements of these to display and edit
     ///   - title: title of the config list screen
-    public static func presentConfigList(showing domains: ConfigDomain..., title: String? = nil, preferences: Preferences? = nil) {
-        presentConfigList(showing: domains, title: title, preferences: preferences)
+    public static func presentConfigList(showing domains: ConfigDomain..., title: String? = nil, settings: Settings? = nil) {
+        presentConfigList(showing: domains, title: title, settings: settings)
     }
 
     /// ⬆️ Creates Config List screen, displaying configs of the given ConfigDomains, and modally presents on the topmost ViewController
     /// - Parameters:
     ///   - domains: the config elements of these to display and edit
     ///   - title: title of the config list screen
-    public static func presentConfigList(showing domains: [ConfigDomain], title: String? = nil, preferences: Preferences? = nil) {
-        let screen = makeConfigListScreen(domains: domains, title: title, preferences: preferences)
+    public static func presentConfigList(showing domains: [ConfigDomain], title: String? = nil, settings: Settings? = nil) {
+        let screen = makeConfigListScreen(domains: domains, title: title, settings: settings)
         screen.addCloseButton()
         let navigationController = UINavigationController(rootViewController: screen)
         navigationController.navigationBar.prefersLargeTitles = true
@@ -79,13 +74,13 @@ public class Confy {
     ///   - domains: combined, the elemnets to display and edit
     ///   - title: title of the config list screen
     /// - Returns: Config List Screen
-    public static func makeConfigListScreen(domains: [ConfigDomain], title: String?, preferences: Preferences? = nil) -> ConfigViewController {
-        let resolvedPreferences = preferences ?? Self.preferences
+    public static func makeConfigListScreen(domains: [ConfigDomain], title: String?, settings: Settings? = nil) -> ConfigViewController {
+        let resolvedSettings = settings ?? Self.settings
         let view = Confy.storyboard.instantiateViewController(withIdentifier: "list") as! ConfigViewController
-        let interactor = ConfigInteractor(domains: domains, preferences: resolvedPreferences)
+        let interactor = ConfigInteractor(domains: domains, settings: resolvedSettings)
         view.useCase = interactor
         interactor.display = view
-        view.preferences = resolvedPreferences
+        view.settings = resolvedSettings
         if title != nil {
             view.title = title
         }
@@ -93,32 +88,6 @@ public class Confy {
     }
 
     #endif
-}
-
-extension Confy {
-    public struct Preferences {
-        public init() { }
-        /// 🔎 Search options
-        public var search = Search()
-        public struct Search {
-            /// 🗂 Find items where embedding section title matches
-            public var matchWithSectionTitle = true
-        }
-        #if canImport(UIKit)
-        /// 📜 Appearance of list and items
-        public var list = List()
-        public struct List {
-            public init() { }
-            /// 🥢 Determines wheter of not the current source of a config is shown
-            public var showCurrentSource = true
-            /// 🎈 Text color of the source label in case override is applied
-            public var overrideColor: UIColor = .red
-            /// 🎨 Assign specific colors to custom config sources with matching names.
-            /// For example: `["Firebase" : .orange]`
-            public var sourcePalette: [String: UIColor] = [:]
-        }
-        #endif
-    }
 }
 
 extension Confy {
