@@ -20,14 +20,9 @@ platform :ios do
   podspec_path = "./Confy.podspec"
 
   lane :release do |options|
-    version = options.fetch(:version, "undefined")
-    if version == "undefined"
-      UI.user_error!("Missing version number, append ` version:X.Y.Z`")
-    end
-
-    podspec_version = version_get_podspec(path: podspec_path)
-    if podspec_version == version
-      UI.user_error!("Given version matches with current one")
+    bump_type = options.fetch(:bump, "undefined")
+    if bump_type != "major" || bump_type != "minor" || bump_type != "patch"
+      UI.user_error!("Missing version bump type, append ` bump:major|minor|patch`")
     end
 
     if !ENV["CONFY_RELEASE_TOKEN"]
@@ -44,14 +39,14 @@ platform :ios do
     changelog = changelog_from_git_commits(
       between: [last_version_tag, "HEAD"],
       pretty: "- %s",
-      date_format: "short",# Optional, lets you provide an additional date format to dates within the pretty-formatted string
+      date_format: "short", # Optional, lets you provide an additional date format to dates within the pretty-formatted string
       match_lightweight_tag: false,  # Optional, lets you ignore lightweight (non-annotated) tags when searching for the last tag
     )
 
     # Bumping version
 
-    version_bump_podspec(path: podspec_path, version_number: version)
-    git_commit(path: podspec_path, message: "Version Bump")
+    version = version_bump_podspec(path: podspec_path, bump_type: bump_type)
+    git_commit(path: podspec_path, message: "Release version #{version}")
     push_to_git_remote
     git_tag tag:version
 
