@@ -10,8 +10,8 @@ import Foundation
 protocol ConfigUseCase: AnyObject {
     func load()
     func search(for phrase: String)
-    func overrideConfig(domainName: String, key: String, with newValue: String)
-    func resetConfig(domainName: String, key: String)
+    func overrideConfig(groupName: String, key: String, with newValue: String)
+    func resetConfig(groupName: String, key: String)
     func resetAllConfigs()
 }
 

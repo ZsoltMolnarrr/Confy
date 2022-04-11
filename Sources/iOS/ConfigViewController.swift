@@ -68,7 +68,7 @@ public class ConfigViewController: UIViewController {
         return overrides
     }
 
-    private func domainName(for indexPath: IndexPath) -> String {
+    private func groupName(for indexPath: IndexPath) -> String {
         if #available(iOS 13.0, *) {
             return plainDataSource[indexPath.section].title
         } else {
@@ -92,12 +92,12 @@ public class ConfigViewController: UIViewController {
         present(alert, animated: true)
     }
 
-    private func edit(config: ConfigSnapshot, domainName: String) {
+    private func edit(config: ConfigSnapshot, groupName: String) {
         let editor = Confy.storyboard.instantiateViewController(withIdentifier: "editor") as! ConfigTexEditorViewController
         editor.key = config.name
         editor.value = config.encodedValue
         editor.onSave = { [weak self] newValue in
-            self?.useCase.overrideConfig(domainName: domainName, key: config.name, with: newValue)
+            self?.useCase.overrideConfig(groupName: groupName, key: config.name, with: newValue)
             self?.navigationController?.popViewController(animated: true)
         }
         if isPrimitive(value: config.value) {
@@ -135,7 +135,7 @@ extension ConfigViewController: UITableViewDataSource {
     public func tableView(_ tableView: UITableView,
                    trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let config = self.config(for: indexPath)
-        let domainName = domainName(for: indexPath)
+        let groupName = groupName(for: indexPath)
         let copy = UIContextualAction(style: .normal, title: "Copy") { _, _, completionHandler in
             completionHandler(true)
             self.copy(config: config)
@@ -144,13 +144,13 @@ extension ConfigViewController: UITableViewDataSource {
 
         let edit = UIContextualAction(style: .normal, title: "Edit") { _, _, completionHandler in
             completionHandler(true)
-            self.edit(config: config, domainName: domainName)
+            self.edit(config: config, groupName: groupName)
         }
         edit.backgroundColor = .systemOrange
 
         let reset = UIContextualAction(style: .normal, title: "Reset") { _, _, completionHandler in
             completionHandler(true)
-            self.useCase.resetConfig(domainName: domainName, key: config.name)
+            self.useCase.resetConfig(groupName: groupName, key: config.name)
         }
         reset.backgroundColor = config.source == .localOverride ? .systemRed : .gray
 
@@ -167,8 +167,8 @@ extension ConfigViewController: UISearchResultsUpdating {
 extension ConfigViewController: UITableViewDelegate {
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        let domainName = domainName(for: indexPath)
-        edit(config: config(for: indexPath), domainName: domainName)
+        let groupName = groupName(for: indexPath)
+        edit(config: config(for: indexPath), groupName: groupName)
     }
 }
 

@@ -20,45 +20,45 @@ public class Confy {
 
     #if canImport(UIKit)
 
-    /// ➡️ Creates Config List screen, displaying configs of the given ConfigDomains, and pushes into the given navigation controller
+    /// ➡️ Creates Config List screen, displaying configs of the given ConfigGroups, and pushes into the given navigation controller
     /// - Parameters:
-    ///   - domains: the config elements of these to display and edit
+    ///   - groups: the config elements of these to display and edit
     ///   - title: title of the config list screen
     ///   - navigationController: stack to push the screen into
-    public static func pushConfigList(showing domains: ConfigDomain...,
+    public static func pushConfigList(showing groups: ConfigGroup...,
                                       title: String? = nil,
                                       navigationController: UINavigationController,
                                       settings: Settings? = nil) {
-        pushConfigList(showing: domains, title: title, navigationController: navigationController, settings: settings)
+        pushConfigList(showing: groups, title: title, navigationController: navigationController, settings: settings)
     }
 
-    /// ➡️ Creates Config List screen, displaying configs of the given ConfigDomains, and pushes into the given navigation controller
+    /// ➡️ Creates Config List screen, displaying configs of the given ConfigGroups, and pushes into the given navigation controller
     /// - Parameters:
-    ///   - domains: the config elements of these to display and edit
+    ///   - groups: the config elements of these to display and edit
     ///   - title: title of the config list screen
     ///   - navigationController: stack to push the screen into
-    public static func pushConfigList(showing domains: [ConfigDomain],
+    public static func pushConfigList(showing groups: [ConfigGroup],
                                       title: String? = nil,
                                       navigationController: UINavigationController,
                                       settings: Settings? = nil) {
-        let screen = makeConfigListScreen(domains: domains, title: title, settings: settings)
+        let screen = makeConfigListScreen(groups: groups, title: title, settings: settings)
         navigationController.pushViewController(screen, animated: true)
     }
 
-    /// ⬆️ Creates Config List screen, displaying configs of the given ConfigDomains, and modally presents on the topmost ViewController
+    /// ⬆️ Creates Config List screen, displaying configs of the given ConfigGroups, and modally presents on the topmost ViewController
     /// - Parameters:
-    ///   - domains: the config elements of these to display and edit
+    ///   - groups: the config elements of these to display and edit
     ///   - title: title of the config list screen
-    public static func presentConfigList(showing domains: ConfigDomain..., title: String? = nil, settings: Settings? = nil) {
-        presentConfigList(showing: domains, title: title, settings: settings)
+    public static func presentConfigList(showing groups: ConfigGroup..., title: String? = nil, settings: Settings? = nil) {
+        presentConfigList(showing: groups, title: title, settings: settings)
     }
 
-    /// ⬆️ Creates Config List screen, displaying configs of the given ConfigDomains, and modally presents on the topmost ViewController
+    /// ⬆️ Creates Config List screen, displaying configs of the given ConfigGroups, and modally presents on the topmost ViewController
     /// - Parameters:
-    ///   - domains: the config elements of these to display and edit
+    ///   - groups: the config elements of these to display and edit
     ///   - title: title of the config list screen
-    public static func presentConfigList(showing domains: [ConfigDomain], title: String? = nil, settings: Settings? = nil) {
-        let screen = makeConfigListScreen(domains: domains, title: title, settings: settings)
+    public static func presentConfigList(showing groups: [ConfigGroup], title: String? = nil, settings: Settings? = nil) {
+        let screen = makeConfigListScreen(groups: groups, title: title, settings: settings)
         screen.addCloseButton()
         let navigationController = UINavigationController(rootViewController: screen)
         navigationController.navigationBar.prefersLargeTitles = true
@@ -71,13 +71,13 @@ public class Confy {
     /// 🏭 Creates Config List Screen
     /// May be used with custom presentation method
     /// - Parameters:
-    ///   - domains: combined, the elemnets to display and edit
+    ///   - groups: combined, the elemnets to display and edit
     ///   - title: title of the config list screen
     /// - Returns: Config List Screen
-    public static func makeConfigListScreen(domains: [ConfigDomain], title: String?, settings: Settings? = nil) -> ConfigViewController {
+    public static func makeConfigListScreen(groups: [ConfigGroup], title: String?, settings: Settings? = nil) -> ConfigViewController {
         let resolvedSettings = settings ?? Self.settings
         let view = Confy.storyboard.instantiateViewController(withIdentifier: "list") as! ConfigViewController
-        let interactor = ConfigInteractor(domains: domains, settings: resolvedSettings)
+        let interactor = ConfigInteractor(groups: groups, settings: resolvedSettings)
         view.useCase = interactor
         interactor.display = view
         view.settings = resolvedSettings

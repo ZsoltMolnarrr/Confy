@@ -15,12 +15,12 @@ public struct Settings {
     public var persistence = Persistence()
     public struct Persistence {
         public init() { }
-        /// 🐛  If set to true, `restoreOverrides` of ConfigDomain objects will have no effect in non `DEBUG` builds.
-        /// If changing this value, make sure to perform it before initializing ConfigDomains.
+        /// 🐛  If set to true, overriden configs will be restored from persistent store only in `DEBUG` builds.
+        /// If changing this value, make sure to perform it before initializing ConfigGroups.
         public var restoreOnlyInDebugBuildConfiguration = true
-        /// 🏠 Default used by ConfigDomains, to store overridden values.
+        /// 🏠 Default used by ConfigGroups, to store overridden values.
         /// May be set to `nil` in order to disable persistent storage.
-        /// If changing this value, make sure to perform it before initializing ConfigDomains.
+        /// If changing this value, make sure to perform it before initializing ConfigGroups.
         public var defaultStore: PersistentConfigStore? = UserDefaultsConfigStore()
     }
 

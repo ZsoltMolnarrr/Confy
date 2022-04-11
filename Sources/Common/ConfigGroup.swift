@@ -1,5 +1,5 @@
 //
-//  ConfigDomain.swift
+//  ConfigGroup.swift
 //  Confy
 //
 //  Created by Zsolt Molnár on 2022. 03. 04..
@@ -7,19 +7,19 @@
 
 import Foundation
 
-public protocol ConfigDomain: AnyObject {
-    var configDomainName: String { get }
+public protocol ConfigGroup: AnyObject {
+    var configGroupName: String { get }
     var configStore: PersistentConfigStore? { get }
     func overridesChanged()
 }
 
-public extension ConfigDomain {
-    var childDomains: [ConfigDomain] {
+public extension ConfigGroup {
+    var childGroups: [ConfigGroup] {
         let mirror = Mirror(reflecting: self)
         return mirror.children
-            .compactMap { (label: String?, value: Any) -> (String, ConfigDomain)? in
-                guard let label = label, let domain = value as? ConfigDomain else { return nil }
-                return (label, domain)
+            .compactMap { (label: String?, value: Any) -> (String, ConfigGroup)? in
+                guard let label = label, let group = value as? ConfigGroup else { return nil }
+                return (label, group)
             }
             .sorted { $0.0 < $1.0 } // Alphabetical sort
             .map { $0.1 } // Drop the label
@@ -29,7 +29,7 @@ public extension ConfigDomain {
         Confy.settings.persistence.defaultStore
     }
 
-    var configDomainName: String {
+    var configGroupName: String {
         String(describing: self)
     }
 
@@ -49,7 +49,7 @@ public extension ConfigDomain {
 
     private func performRestore() {
         guard let configStore = configStore else { return }
-        let restoredValues = configStore.load(domain: configDomainName)
+        let restoredValues = configStore.load(group: configGroupName)
         for (key, value) in restoredValues {
             if let config = propertyValue(named: key) as? OverridableProperty,
                 let data = value as? Data {
@@ -59,7 +59,7 @@ public extension ConfigDomain {
     }
 }
 
-extension ConfigDomain {
+extension ConfigGroup {
     var snapshots: [ConfigSnapshot] {
         return properties.compactMap { (name: String, value: Any) in
             if let overrideable = value as? OverridableProperty {
@@ -75,7 +75,7 @@ extension ConfigDomain {
         if let config = propertyValue(named: propertyName) as? OverridableProperty {
             try config.override(with: data)
             if let configStore = configStore, let data = data {
-                configStore.save(domain: configDomainName, key: propertyName, value: data)
+                configStore.save(group: configGroupName, key: propertyName, value: data)
                 overridesChanged()
             }
         }
@@ -97,7 +97,7 @@ extension ConfigDomain {
             if let config = propertyValue(named: propertyName) as? OverridableProperty {
                 try? config.override(with: nil)
                 if let configStore = configStore {
-                    configStore.removeValue(domain: configDomainName, key: propertyName)
+                    configStore.removeValue(group: configGroupName, key: propertyName)
                 }
             }
         }

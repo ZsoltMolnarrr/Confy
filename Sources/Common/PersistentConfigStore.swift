@@ -9,9 +9,9 @@ import Foundation
 
 /// Stores Config overrides at a persistent location.
 public protocol PersistentConfigStore {
-    func save(domain: String, key: String, value: Data)
-    func load(domain: String) -> [String: Any]
-    func removeValue(domain: String, key: String)
+    func save(group: String, key: String, value: Data)
+    func load(group: String) -> [String: Any]
+    func removeValue(group: String, key: String)
 }
 
 /// Stores Config overrides in UserDefaults
@@ -24,33 +24,33 @@ public class UserDefaultsConfigStore {
         self.userDefaults = userDefaults
     }
 
-    private func dictionary(of domain: String) -> [String: Any] {
+    private func dictionary(of group: String) -> [String: Any] {
         let mainDict = userDefaults.dictionary(forKey: key) ?? [:]
-        let domainDict = (mainDict[domain] as? [String: Any]) ?? [:]
-        return domainDict
+        let groupDict = (mainDict[group] as? [String: Any]) ?? [:]
+        return groupDict
     }
 
-    private func save(dictionary: [String: Any], for domain: String) {
+    private func save(dictionary: [String: Any], for group: String) {
         var mainDict = userDefaults.dictionary(forKey: key) ?? [:]
-        mainDict[domain] = dictionary
+        mainDict[group] = dictionary
         userDefaults.set(mainDict, forKey: key)
     }
 }
 
 extension UserDefaultsConfigStore: PersistentConfigStore {
-    public func save(domain: String, key: String, value: Data) {
-        var dict = dictionary(of: domain)
+    public func save(group: String, key: String, value: Data) {
+        var dict = dictionary(of: group)
         dict[key] = value
-        save(dictionary: dict, for: domain)
+        save(dictionary: dict, for: group)
     }
 
-    public func load(domain: String) -> [String: Any] {
-        return dictionary(of: domain)
+    public func load(group: String) -> [String: Any] {
+        return dictionary(of: group)
     }
 
-    public func removeValue(domain: String, key: String) {
-        var dict = dictionary(of: domain)
+    public func removeValue(group: String, key: String) {
+        var dict = dictionary(of: group)
         dict.removeValue(forKey: key)
-        save(dictionary: dict, for: domain)
+        save(dictionary: dict, for: group)
     }
 }
