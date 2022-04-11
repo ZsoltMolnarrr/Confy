@@ -21,8 +21,9 @@ platform :ios do
 
   lane :release do |options|
     bump_type = options.fetch(:bump, "undefined")
-    if bump_type != "major" || bump_type != "minor" || bump_type != "patch"
-      UI.user_error!("Missing version bump type, append ` bump:major|minor|patch`")
+    bump_types = ["major", "minor", "patch"]
+    unless bump_types.include?(bump_type)
+      UI.user_error!("Missing version bump type, append ` bump:#{bump_types.join("|")}}`")
     end
 
     if !ENV["CONFY_RELEASE_TOKEN"]
