@@ -6,6 +6,9 @@
 //
 
 import Foundation
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// 🔩 Apperance and behaviour settings of ConfigViewController
 public struct Settings {
