@@ -31,7 +31,7 @@ class ConfigInteractor {
 
     private func makeViewModel(domains: [ConfigDomain]) -> ConfigViewModel {
         let sections: [ConfigViewModel.Section] = domains.map { domain -> ConfigViewModel.Section in
-            var title = domain.configDomainName.dropPrefixes(by: settings)
+            let title = domain.configDomainName.dropPrefixes(by: settings)
             let elements = domain.snapshots
                 .filter({ [settings] config -> Bool in
                     if let searchPhrase = self.searchPhrase, searchPhrase != "" {
