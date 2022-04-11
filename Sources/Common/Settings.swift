@@ -37,7 +37,6 @@ public struct Settings {
         public var matchWithSectionTitle = true
     }
 
-    #if canImport(UIKit)
     /// 📜 Appearance of list and items
     public var list = List()
     public struct List {
@@ -47,11 +46,12 @@ public struct Settings {
         public var dropSectionTitlePrefixes = true
         /// 🥢 Determines wheter of not the current source of a config is shown
         public var showCurrentSource = true
+        #if canImport(UIKit)
         /// 🎈 Text color of the source label in case override is applied
         public var overrideColor: UIColor = .red
         /// 🎨 Assign specific colors to custom config sources with matching names.
         /// For example: `["Firebase" : .orange]`
         public var sourcePalette: [String: UIColor] = [:]
+        #endif
     }
-    #endif
 }
