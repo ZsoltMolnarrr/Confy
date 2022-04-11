@@ -11,9 +11,9 @@ class ConfigInteractor {
     weak var display: ConfigDisplay?
     private var settings: Settings
     private var searchPhrase: String?
-    private let groups: [ConfigGroup]
+    private let groups: [ConfigGroupProtocol]
 
-    init(groups: [ConfigGroup], settings: Settings) {
+    init(groups: [ConfigGroupProtocol], settings: Settings) {
         guard !groups.map({ $0.configGroupName }).containsDuplicates() else {
             fatalError("ERROR! Config UI cannot handle multiple groups with the same name.")
         }
@@ -21,15 +21,15 @@ class ConfigInteractor {
         self.settings = settings
     }
 
-    private func group(named: String) -> ConfigGroup? {
+    private func group(named: String) -> ConfigGroupProtocol? {
         return groups.first { $0.configGroupName.dropPrefixes(by: settings) == named }
     }
 
-    private func configsDidUpdate(groups: [ConfigGroup]) {
+    private func configsDidUpdate(groups: [ConfigGroupProtocol]) {
         display?.display(config: makeViewModel(groups: groups))
     }
 
-    private func makeViewModel(groups: [ConfigGroup]) -> ConfigViewModel {
+    private func makeViewModel(groups: [ConfigGroupProtocol]) -> ConfigViewModel {
         let sections: [ConfigViewModel.Section] = groups.map { group -> ConfigViewModel.Section in
             let title = group.configGroupName.dropPrefixes(by: settings)
             let elements = group.snapshots

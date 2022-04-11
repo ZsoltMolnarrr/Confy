@@ -25,7 +25,7 @@ public class Confy {
     ///   - groups: the config elements of these to display and edit
     ///   - title: title of the config list screen
     ///   - navigationController: stack to push the screen into
-    public static func pushConfigList(showing groups: ConfigGroup...,
+    public static func pushConfigList(showing groups: ConfigGroupProtocol...,
                                       title: String? = nil,
                                       navigationController: UINavigationController,
                                       settings: Settings? = nil) {
@@ -37,7 +37,7 @@ public class Confy {
     ///   - groups: the config elements of these to display and edit
     ///   - title: title of the config list screen
     ///   - navigationController: stack to push the screen into
-    public static func pushConfigList(showing groups: [ConfigGroup],
+    public static func pushConfigList(showing groups: [ConfigGroupProtocol],
                                       title: String? = nil,
                                       navigationController: UINavigationController,
                                       settings: Settings? = nil) {
@@ -49,7 +49,7 @@ public class Confy {
     /// - Parameters:
     ///   - groups: the config elements of these to display and edit
     ///   - title: title of the config list screen
-    public static func presentConfigList(showing groups: ConfigGroup..., title: String? = nil, settings: Settings? = nil) {
+    public static func presentConfigList(showing groups: ConfigGroupProtocol..., title: String? = nil, settings: Settings? = nil) {
         presentConfigList(showing: groups, title: title, settings: settings)
     }
 
@@ -57,7 +57,7 @@ public class Confy {
     /// - Parameters:
     ///   - groups: the config elements of these to display and edit
     ///   - title: title of the config list screen
-    public static func presentConfigList(showing groups: [ConfigGroup], title: String? = nil, settings: Settings? = nil) {
+    public static func presentConfigList(showing groups: [ConfigGroupProtocol], title: String? = nil, settings: Settings? = nil) {
         let screen = makeConfigListScreen(groups: groups, title: title, settings: settings)
         screen.addCloseButton()
         let navigationController = UINavigationController(rootViewController: screen)
@@ -74,7 +74,7 @@ public class Confy {
     ///   - groups: combined, the elemnets to display and edit
     ///   - title: title of the config list screen
     /// - Returns: Config List Screen
-    public static func makeConfigListScreen(groups: [ConfigGroup], title: String?, settings: Settings? = nil) -> ConfigViewController {
+    public static func makeConfigListScreen(groups: [ConfigGroupProtocol], title: String?, settings: Settings? = nil) -> ConfigViewController {
         let resolvedSettings = settings ?? Self.settings
         let view = Confy.storyboard.instantiateViewController(withIdentifier: "list") as! ConfigViewController
         let interactor = ConfigInteractor(groups: groups, settings: resolvedSettings)

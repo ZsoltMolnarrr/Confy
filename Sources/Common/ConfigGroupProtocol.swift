@@ -7,18 +7,24 @@
 
 import Foundation
 
-public protocol ConfigGroup: AnyObject {
+open class ConfigGroup: ConfigGroupProtocol {
+    public init() {
+        restoreOverrides()
+    }
+}
+
+public protocol ConfigGroupProtocol: AnyObject {
     var configGroupName: String { get }
     var configStore: PersistentConfigStore? { get }
     func overridesChanged()
 }
 
-public extension ConfigGroup {
-    var childGroups: [ConfigGroup] {
+public extension ConfigGroupProtocol {
+    var childGroups: [ConfigGroupProtocol] {
         let mirror = Mirror(reflecting: self)
         return mirror.children
-            .compactMap { (label: String?, value: Any) -> (String, ConfigGroup)? in
-                guard let label = label, let group = value as? ConfigGroup else { return nil }
+            .compactMap { (label: String?, value: Any) -> (String, ConfigGroupProtocol)? in
+                guard let label = label, let group = value as? ConfigGroupProtocol else { return nil }
                 return (label, group)
             }
             .sorted { $0.0 < $1.0 } // Alphabetical sort
@@ -59,7 +65,7 @@ public extension ConfigGroup {
     }
 }
 
-extension ConfigGroup {
+extension ConfigGroupProtocol {
     var snapshots: [ConfigSnapshot] {
         return properties.compactMap { (name: String, value: Any) in
             if let overrideable = value as? OverridableProperty {
