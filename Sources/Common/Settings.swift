@@ -18,9 +18,15 @@ public struct Settings {
     public var persistence = Persistence()
     public struct Persistence {
         public init() { }
-        /// 🐛  If set to true, overriden configs will be restored from persistent store only in `DEBUG` builds.
+        /// 🐛  If set to true, overriden configs will be restored from persistent store.
         /// If changing this value, make sure to perform it before initializing ConfigGroups.
-        public var restoreOnlyInDebugBuildConfiguration = true
+        public var restoreOverrides = {
+        #if DEBUG
+        true
+        #else
+        false
+        #endif
+        }()
         /// 🏠 Default used by ConfigGroups, to store overridden values.
         /// May be set to `nil` in order to disable persistent storage.
         /// If changing this value, make sure to perform it before initializing ConfigGroups.

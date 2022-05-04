@@ -44,11 +44,7 @@ public extension ConfigGroupProtocol {
     }
 
     func restoreOverrides() {
-        if Confy.settings.persistence.restoreOnlyInDebugBuildConfiguration {
-            #if DEBUG
-            performRestore()
-            #endif
-        } else {
+        if Confy.settings.persistence.restoreOverrides {
             performRestore()
         }
     }
