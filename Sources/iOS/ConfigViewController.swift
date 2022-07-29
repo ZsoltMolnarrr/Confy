@@ -50,15 +50,24 @@ public class ConfigViewController: UIViewController {
 
     private var updateQueue = DispatchQueue(label: "ConfigViewController")
     private var plainDataSource: [ConfigViewModel.Section] = []
-    @available(iOS 13.0, *)
-    private lazy var diffingDataSource: StringSectionTableViewDiffibleDataSource<ConfigSnapshot> = {
-        let dataSource = StringSectionTableViewDiffibleDataSource<ConfigSnapshot>(tableView: self.tableView) { [settings] tableView, indexPath, item in
-            let cell = tableView.dequeueReusableCell(withIdentifier: "ConfigTableViewCell") as! ConfigTableViewCell
-            cell.configure(viewModel: item, settings: settings!.list)
-            return cell
+
+    private lazy var _diffingDataSource: AnyObject = {
+        if #available(iOS 13.0, *) {
+            let dataSource = StringSectionTableViewDiffibleDataSource<ConfigSnapshot>(tableView: self.tableView) { [settings] tableView, indexPath, item in
+                let cell = tableView.dequeueReusableCell(withIdentifier: "ConfigTableViewCell") as! ConfigTableViewCell
+                cell.configure(viewModel: item, settings: settings!.list)
+                return cell
+            }
+            return dataSource
+        } else {
+            return NSObject()
         }
-        return dataSource
     }()
+
+    @available(iOS 13.0, *)
+    var diffingDataSource: StringSectionTableViewDiffibleDataSource<ConfigSnapshot> {
+        return _diffingDataSource as! StringSectionTableViewDiffibleDataSource<ConfigSnapshot>
+    }
 
     private var overrideCount: Int {
         var overrides = 0
