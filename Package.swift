@@ -24,7 +24,10 @@ let package = Package(
         .target(
             name: "Confy",
             dependencies: [],
-            path: "Sources"),
+            path: "Sources",
+            resources: [
+                .copy("Resources/PrivacyInfo.xcprivacy")
+            ]),
         .testTarget(
             name: "ConfyTests",
             dependencies: ["Confy"]),
