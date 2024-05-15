@@ -57,4 +57,12 @@ public class Config<Value: Codable> {
     public var wrappedValue: Value {
         valueWithSourceName.0
     }
+    
+    public var projectedValue: Config<Value> {
+        self
+    }
+    
+    public func override(value: Value) {
+        overrideValue = value
+    }
 }
